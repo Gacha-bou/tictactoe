@@ -1,0 +1,6 @@
+{
+  "[typescript][javascript][json][jsonc]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  }
+}
