@@ -15,7 +15,9 @@ const client = new Client({
 });
 
 client.once(Events.ClientReady, () => {
-  console.log('ヤオヨロ〜。3億円貰えるけど一生「 き 」から始まる食べ物しか食べられなくなるボタンがあったら押す〜？');
+  console.log(
+    'ヤオヨロ〜。3億円貰えるけど一生「 き 」から始まる食べ物しか食べられなくなるボタンがあったら押す〜？',
+  );
 });
 
 // イベント登録用
@@ -24,7 +26,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     await slashCommandsInteraction(interaction);
 
     // コンボボックス選択時処理。別ファイルに分けるか？
-  }  else if (interaction.isStringSelectMenu()) {
+  } else if (interaction.isStringSelectMenu()) {
     await selectMenuInteraction(interaction);
   }
 });
