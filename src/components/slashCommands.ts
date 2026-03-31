@@ -5,23 +5,20 @@ import {
   TextChannel,
 } from 'discord.js';
 
-import { TicTocToe } from '../tictactoe';
+import { TicTacToe } from '../tictactoe';
 const flags = MessageFlags.Ephemeral;
-
-// 将来的にtictactoe側で複数管理できるようにする
-const tictactoe = new TicTocToe();
 
 // 起動と終了の2つだけで現状十分
 const commands = {
-  tictoctoe: {
-    data: new SlashCommandBuilder().setName('tictoctoe').setDescription('⚪︎×ゲームを開始します。'),
-    execute: async (interaction: ChatInputCommandInteraction) => {
-      await tictactoe.startTicTacToe(interaction);
+  tictactoe: {
+    data: new SlashCommandBuilder().setName('tictactoe').setDescription('⚪︎×ゲームを開始します。'),
+    execute: async (interaction: ChatInputCommandInteraction, tictactoe: TicTacToe) => {
+      await tictactoe.initTicTacToe(interaction);
     },
   },
   stop: {
     data: new SlashCommandBuilder().setName('stop').setDescription('⚪︎×ゲームを終了します。'),
-    execute: async (interaction: ChatInputCommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction, tictactoe: TicTacToe) => {
       await tictactoe.stopTicTacToe(interaction);
     },
   },
@@ -34,11 +31,14 @@ type CommandName = keyof typeof commands;
 export const commandsData = Object.values(commands).map((command) => command.data.toJSON());
 
 // スラッシュコマンドが呼ばれて際に対応したハンドラを呼ぶ
-export const slashCommandsInteraction = async (interaction: ChatInputCommandInteraction) => {
+export const slashCommandsInteraction = async (
+  interaction: ChatInputCommandInteraction,
+  tictactoe: TicTacToe,
+) => {
   if (!(interaction.commandName in commands)) {
     await interaction.reply({ content: 'やっちょの知らない言語だよ', flags });
     return;
   }
   const commandName = interaction.commandName as CommandName;
-  await commands[commandName].execute(interaction);
+  await commands[commandName].execute(interaction, tictactoe);
 };

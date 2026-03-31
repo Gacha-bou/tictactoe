@@ -1,4 +1,9 @@
-import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  MessageFlags,
+  ButtonInteraction,
+  RepliableInteraction,
+} from 'discord.js';
 
 import { optionSelect } from './components/buttons';
 
@@ -6,11 +11,19 @@ import { optionSelect } from './components/buttons';
 const flags = MessageFlags.Ephemeral;
 type Status = 'wait' | 'play' | 'finish';
 
-export class TicTocToe {
+export const gameConfig = new Map<
+  string,
+  {
+    turn?: string;
+    difficulty?: string;
+  }
+>();
+
+export class TicTacToe {
   private playUser = '';
   private gameStatus: Status = 'wait';
 
-  public async startTicTacToe(interaction: ChatInputCommandInteraction) {
+  public async initTicTacToe(interaction: ChatInputCommandInteraction) {
     if (this.gameStatus == 'wait') {
       this.playUser = interaction.user.id;
       this.gameStatus = 'play';
@@ -30,9 +43,20 @@ export class TicTocToe {
     });
     return;
   }
-  public async stopTicTacToe(interaction: ChatInputCommandInteraction) {
+
+  public async startTicTacToe(interaction: ButtonInteraction, tictactoe: TicTacToe) {
+    await interaction.editReply({
+      content: '今から実装するので待っててね〜ヨヨヨ〜',
+      components: [],
+    });
+    await tictactoe.stopTicTacToe(interaction);
+
+    return;
+  }
+
+  public async stopTicTacToe(interaction: RepliableInteraction) {
     this.playUser = '';
-    this.gameStatus = 'play';
-    await interaction.reply({ content: '👋', flags });
+    this.gameStatus = 'wait';
+    return;
   }
 }

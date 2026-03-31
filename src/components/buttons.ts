@@ -2,7 +2,12 @@ import {
   ActionRowBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuInteraction,
+  ButtonInteraction,
 } from 'discord.js';
+import { gameConfig, TicTacToe } from '../tictactoe';
 
 export function optionSelect() {
   const turnMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -26,5 +31,40 @@ export function optionSelect() {
       ),
   );
 
-  return [turnMenu, difficultyMenu];
+  const okButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId('gamestart')
+      .setLabel('ゲーム開始！')
+      .setStyle(ButtonStyle.Primary),
+  );
+
+  return [turnMenu, difficultyMenu, okButton];
 }
+
+// ここら辺の処理をslashCommandsと同じ感じにできるはずだけど一旦後回し
+export const selectMenuInteraction = async (interaction: StringSelectMenuInteraction) => {
+  await interaction.deferUpdate();
+
+  const selected = interaction.values[0]; // 選択した値を取得
+  const current = gameConfig.get(interaction.user.id) ?? {};
+
+  switch (interaction.customId) {
+    case 'turn':
+      gameConfig.set(interaction.user.id, { ...current, turn: selected });
+      break;
+    case 'difficulty':
+      gameConfig.set(interaction.user.id, { ...current, difficulty: selected });
+      break;
+  }
+};
+
+export const buttonInteraction = async (interaction: ButtonInteraction, tictactoe: TicTacToe) => {
+  // 回線が遅いのもあるが毎回deferUpdateはおかしいはず
+  await interaction.deferUpdate();
+
+  switch (interaction.customId) {
+    case 'gamestart':
+      await tictactoe.startTicTacToe(interaction, tictactoe);
+      break;
+  }
+};

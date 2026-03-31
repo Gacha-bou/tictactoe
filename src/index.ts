@@ -1,7 +1,8 @@
 import { Client, GatewayIntentBits, Events, REST, Routes } from 'discord.js';
 import { config } from 'dotenv';
+import { TicTacToe } from './tictactoe';
 import { commandsData, slashCommandsInteraction } from './components/slashCommands';
-import { selectMenuInteraction } from './components/selectMenu';
+import { buttonInteraction, selectMenuInteraction } from './components/buttons';
 
 config();
 
@@ -20,10 +21,15 @@ client.once(Events.ClientReady, () => {
   );
 });
 
+// 将来的にtictactoe側で複数管理できるようにする
+const tictactoe = new TicTacToe();
+
 // イベント登録用
 client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isChatInputCommand()) {
-    await slashCommandsInteraction(interaction);
+    await slashCommandsInteraction(interaction, tictactoe);
+  } else if (interaction.isButton()) {
+    await buttonInteraction(interaction, tictactoe);
 
     // コンボボックス選択時処理。別ファイルに分けるか？
   } else if (interaction.isStringSelectMenu()) {
