@@ -5,23 +5,27 @@ import {
   RepliableInteraction,
 } from 'discord.js';
 
-import { optionSelect } from './components/buttons';
+import { optionSelect, buildBoardButtons} from './components/buttons';
+
+import { Cell, Board } from './boards';
 
 // 送信者専用にする時にこれ
 const flags = MessageFlags.Ephemeral;
 type Status = 'wait' | 'play' | 'finish';
 
-export const gameConfig = new Map<
-  string,
-  {
-    turn?: string;
-    difficulty?: string;
-  }
->();
+// 将来的にmap型にしてユーザ別にセッションを保持できるようにする
+export const gameConfig: {
+  turn: string | null;
+  difficulty: string | null;
+} = {
+  turn: null,
+  difficulty: null,
+};
 
 export class TicTacToe {
   private playUser = '';
   private gameStatus: Status = 'wait';
+  private board: Board = Array(9).fill(null);
 
   public async initTicTacToe(interaction: ChatInputCommandInteraction) {
     if (this.gameStatus == 'wait') {
@@ -45,12 +49,18 @@ export class TicTacToe {
   }
 
   public async startTicTacToe(interaction: ButtonInteraction, tictactoe: TicTacToe) {
-    await interaction.editReply({
-      content: '今から実装するので待っててね〜ヨヨヨ〜',
-      components: [],
-    });
-    await tictactoe.stopTicTacToe(interaction);
+    if (!gameConfig.difficulty || !gameConfig.turn) {
+      await interaction.editReply({
+        content: '選択肢を全て選んでからゲームを始めてね〜',
+        components: optionSelect(),
+      });
+      return;
+    }
 
+    await interaction.editReply({
+      content: 'ゲームを始めるよ！ヤッチョと勝負だ！',
+      components: buildBoardButtons(this.board),
+    });
     return;
   }
 
