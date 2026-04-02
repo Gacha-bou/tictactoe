@@ -9,7 +9,7 @@ import {
   Application,
 } from 'discord.js';
 import { gameConfig, TicTacToe } from '../tictactoe';
-import { Board } from '../boards';
+import { Board, placeCell } from '../boards';
 
 export const optionSelect = () => {
   const turnMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -50,11 +50,23 @@ export const buildBoardButtons = (board: Board) => {
     const row = new ActionRowBuilder<ButtonBuilder>();
     for (let col = 0; col < 3; col++) {
       const num = col + line * 3 + 1;
-      row.addComponents(new ButtonBuilder().setCustomId(`${num}`).setLabel(`${num}`).setStyle(ButtonStyle.Primary));
+      const cell = board[num];
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`cell_${num}`)
+          .setLabel(`${num}`)
+          .setStyle(
+            cell == 'X'
+              ? ButtonStyle.Danger
+              : cell == 'O'
+                ? ButtonStyle.Primary
+                : ButtonStyle.Secondary,
+          ),
+      );
     }
     rows.push(row);
   }
-  return(rows);
+  return rows;
 };
 
 // ここら辺の処理をslashCommandsと同じ感じにできるはずだけど一旦後回し
@@ -78,7 +90,16 @@ export const buttonInteraction = async (interaction: ButtonInteraction, tictacto
 
   switch (interaction.customId) {
     case 'gamestart':
-      await tictactoe.startTicTacToe(interaction, tictactoe);
+      await tictactoe.startTicTacToe(interaction);
+      break;
+
+    // ボード内のボタンが押された際の処理
+    default:
+      if (interaction.customId.startsWith('cell_')) {
+        await tictactoe.onCellPressed(interaction);
+      }
+      break;
+
       break;
   }
 };

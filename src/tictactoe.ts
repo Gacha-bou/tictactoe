@@ -5,9 +5,11 @@ import {
   RepliableInteraction,
 } from 'discord.js';
 
-import { optionSelect, buildBoardButtons} from './components/buttons';
+import { optionSelect, buildBoardButtons } from './components/buttons';
 
-import { Cell, Board } from './boards';
+import { Cell, Board, placeCell } from './boards';
+
+import { selectCpuHand } from './cpu';
 
 // 送信者専用にする時にこれ
 const flags = MessageFlags.Ephemeral;
@@ -48,7 +50,7 @@ export class TicTacToe {
     return;
   }
 
-  public async startTicTacToe(interaction: ButtonInteraction, tictactoe: TicTacToe) {
+  public async startTicTacToe(interaction: ButtonInteraction) {
     if (!gameConfig.difficulty || !gameConfig.turn) {
       await interaction.editReply({
         content: '選択肢を全て選んでからゲームを始めてね〜',
@@ -62,6 +64,36 @@ export class TicTacToe {
       components: buildBoardButtons(this.board),
     });
     return;
+  }
+
+  public async onCellPressed(interaction: ButtonInteraction) {
+    const num = parseInt(interaction.customId.replace('cell_', ''));
+
+    if (num < 0 || 9 < num) {
+      await interaction.followUp({
+        content: 'そこに石はないよ！',
+        flags,
+      });
+      return;
+    }
+
+    if (this.board[num] != null) {
+      await interaction.followUp({
+        content: 'もう既に置いているぅ！',
+        flags,
+      });
+      return;
+    }
+
+    placeCell(this.board, num, 'O');
+    // 勝負判定ロジック 人間
+
+    placeCell(this.board, selectCpuHand(), 'X');
+    // 勝負判定ロジック CPU
+
+    await interaction.editReply({
+      components: buildBoardButtons(this.board),
+    });
   }
 
   public async stopTicTacToe(interaction: RepliableInteraction) {
