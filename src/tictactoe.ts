@@ -7,13 +7,18 @@ import {
 
 import { optionSelect, buildBoardButtons } from './components/buttons';
 
-import { Cell, Board, placeCell } from './boards';
+import { Cell, Board, placeCell, Result, checkResult } from './boards';
 
 import { selectCpuHand } from './cpu';
 
 // 送信者専用にする時にこれ
 const flags = MessageFlags.Ephemeral;
 type Status = 'wait' | 'play' | 'finish';
+const resultContent = new Map<NonNullable<Result>, string> ([
+  ['win', 'ヨヨヨ〜あなたの勝利だよ〜…'],
+  ['draw', '引き分け！もう一戦しよっか！'],
+  ['lose', 'イェーイ！感謝・感激・雨アラモード🍮！'],
+]);
 
 // 将来的にmap型にしてユーザ別にセッションを保持できるようにする
 export const gameConfig: {
@@ -25,9 +30,10 @@ export const gameConfig: {
 };
 
 export class TicTacToe {
-  private playUser = '';
+  private playUser: String = '';
   private gameStatus: Status = 'wait';
   private board: Board = Array(9).fill(null);
+  private result: Result = null;
 
   public async initTicTacToe(interaction: ChatInputCommandInteraction) {
     if (this.gameStatus == 'wait') {
@@ -58,6 +64,11 @@ export class TicTacToe {
       });
       return;
     }
+    this.board.fill(null);
+
+    if (gameConfig.turn == 'bot') {
+      placeCell(this.board, selectCpuHand(this.board), '×');
+    }
 
     await interaction.editReply({
       content: 'ゲームを始めるよ！ヤッチョと勝負だ！',
@@ -85,18 +96,31 @@ export class TicTacToe {
       return;
     }
 
-    placeCell(this.board, num, 'O');
-    // 勝負判定ロジック 人間
-
-    placeCell(this.board, selectCpuHand(), 'X');
-    // 勝負判定ロジック CPU
+    placeCell(this.board, num, '⚪︎');
+    this.result = checkResult(this.board)
+    if(this.result){
+      this.endTicTacToe(this.result, interaction);
+    }
+    
+    placeCell(this.board, selectCpuHand(this.board), '×');
+    this.result = checkResult(this.board)
+    if(this.result){
+      this.endTicTacToe(this.result, interaction);
+    }
 
     await interaction.editReply({
       components: buildBoardButtons(this.board),
     });
   }
 
-  public async stopTicTacToe(interaction: RepliableInteraction) {
+  private async endTicTacToe(result: Result, interaction: ButtonInteraction){
+    await interaction.followUp ({
+      content: resultContent.get(result!) ?? '何これ？',
+    });
+    await this.stopTicTacToe();
+    }
+
+  public async stopTicTacToe() {
     this.playUser = '';
     this.gameStatus = 'wait';
     return;

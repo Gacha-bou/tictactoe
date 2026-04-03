@@ -49,16 +49,16 @@ export const buildBoardButtons = (board: Board) => {
   for (let line = 0; line < 3; line++) {
     const row = new ActionRowBuilder<ButtonBuilder>();
     for (let col = 0; col < 3; col++) {
-      const num = col + line * 3 + 1;
+      const num = col + line * 3;
       const cell = board[num];
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(`cell_${num}`)
-          .setLabel(`${num}`)
+          .setLabel(cell == null ? '-' : cell)
           .setStyle(
-            cell == 'X'
+            cell == '×'
               ? ButtonStyle.Danger
-              : cell == 'O'
+              : cell == '⚪︎'
                 ? ButtonStyle.Primary
                 : ButtonStyle.Secondary,
           ),
