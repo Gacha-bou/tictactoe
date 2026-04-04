@@ -105,7 +105,7 @@ export class TicTacToe {
     if (this.result) {
       this.endTicTacToe(this.result, interaction);
       await interaction.editReply({
-        components: buildBoardButtons(this.board),
+        components: buildBoardButtons(this.board, true),
       });
 
       return;
@@ -117,7 +117,7 @@ export class TicTacToe {
     if (this.result) {
       this.endTicTacToe(this.result, interaction);
       await interaction.editReply({
-        components: buildBoardButtons(this.board),
+        components: buildBoardButtons(this.board, true),
       });
 
       return;
@@ -136,6 +136,12 @@ export class TicTacToe {
         .setColor(data?.color ?? 0x000000)
     await interaction.followUp({
       embeds: [embed],
+    });
+
+    await interaction.followUp({
+      content: 'もう一回やる〜？',
+      components: optionSelect(),
+      flags,
     });
     await this.stopTicTacToe();
   }

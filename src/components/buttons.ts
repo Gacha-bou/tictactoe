@@ -11,14 +11,20 @@ import {
 import { gameConfig, TicTacToe } from '../tictactoe';
 import { Board, placeCell } from '../boards';
 
-export const optionSelect = () => {
+export const optionSelect = (turn: string | null = null, difficulty: string | null = null) => {
   const turnMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId('turn')
       .setPlaceholder('先行・後攻は？')
       .addOptions(
-        new StringSelectMenuOptionBuilder().setLabel('先行').setValue('user'),
-        new StringSelectMenuOptionBuilder().setLabel('後攻').setValue('bot'),
+        new StringSelectMenuOptionBuilder()
+          .setLabel('先行')
+          .setValue('user')
+          .setDefault(turn === 'user'),
+        new StringSelectMenuOptionBuilder()
+          .setLabel('後攻')
+          .setValue('bot')
+          .setDefault(turn === 'bot'),
       ),
   );
 
@@ -27,9 +33,18 @@ export const optionSelect = () => {
       .setCustomId('difficulty')
       .setPlaceholder('難易度は？')
       .addOptions(
-        new StringSelectMenuOptionBuilder().setLabel('かんたん(ランダム)').setValue('easy'),
-        new StringSelectMenuOptionBuilder().setLabel('ふつう(半分ランダム)').setValue('normal'),
-        new StringSelectMenuOptionBuilder().setLabel('おに(多分勝てない)').setValue('impossible'),
+        new StringSelectMenuOptionBuilder()
+          .setLabel('かんたん(ランダム)')
+          .setValue('easy')
+          .setDefault(difficulty === 'easy'),
+        new StringSelectMenuOptionBuilder()
+          .setLabel('ふつう(半分ランダム)')
+          .setValue('normal')
+          .setDefault(difficulty === 'normal'),
+        new StringSelectMenuOptionBuilder()
+          .setLabel('おに(多分勝てない)')
+          .setValue('impossible')
+          .setDefault(difficulty === 'impossible'),
       ),
   );
 
@@ -37,13 +52,14 @@ export const optionSelect = () => {
     new ButtonBuilder()
       .setCustomId('gamestart')
       .setLabel('ゲーム開始！')
-      .setStyle(ButtonStyle.Primary),
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(!(turn && difficulty)),
   );
 
   return [turnMenu, difficultyMenu, okButton];
 };
 
-export const buildBoardButtons = (board: Board) => {
+export const buildBoardButtons = (board: Board, disabled = false) => {
   const rows = [];
   // モダンに書く場合はどうなるか気になる箇所
   for (let line = 0; line < 3; line++) {
@@ -61,7 +77,8 @@ export const buildBoardButtons = (board: Board) => {
               : cell == '⚪︎'
                 ? ButtonStyle.Primary
                 : ButtonStyle.Secondary,
-          ),
+          )
+          .setDisabled(disabled),
       );
     }
     rows.push(row);
@@ -82,6 +99,10 @@ export const selectMenuInteraction = async (interaction: StringSelectMenuInterac
       gameConfig.difficulty = selected;
       break;
   }
+
+  await interaction.editReply({
+    components: optionSelect(gameConfig.turn, gameConfig.difficulty),
+  });
 };
 
 export const buttonInteraction = async (interaction: ButtonInteraction, tictactoe: TicTacToe) => {
