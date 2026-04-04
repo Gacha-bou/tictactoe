@@ -2,7 +2,7 @@ import {
   ChatInputCommandInteraction,
   MessageFlags,
   ButtonInteraction,
-  RepliableInteraction,
+  EmbedBuilder,
 } from 'discord.js';
 
 import { optionSelect, buildBoardButtons } from './components/buttons';
@@ -14,10 +14,10 @@ import { selectCpuHand } from './cpu';
 // 送信者専用にする時にこれ
 const flags = MessageFlags.Ephemeral;
 type Status = 'wait' | 'play' | 'finish';
-const resultContent = new Map<NonNullable<Result>, string> ([
-  ['win', 'ヨヨヨ〜あなたの勝利だよ〜…'],
-  ['draw', '引き分け！もう一戦しよっか！'],
-  ['lose', 'イェーイ！感謝・感激・雨アラモード🍮！'],
+const resultContent = new Map<NonNullable<Result>, { title: string, description: string, color: number }>([
+  ['win', {title: '勝利‼️', description: 'ヨヨヨ〜あなたの勝利だよ〜！', color: 0x0075ca}],
+  ['draw', {title: '引き分け❗️', description: '引き分け！もう一戦しよっか！', color: 0x2ea44f}],
+  ['lose', {title: '敗北❗️', description: 'イェーイ！感謝・感激・雨アラモード🍮！', color: 0xd73a4a}],
 ]);
 
 // 将来的にmap型にしてユーザ別にセッションを保持できるようにする
@@ -70,7 +70,10 @@ export class TicTacToe {
       placeCell(this.board, selectCpuHand(this.board), '×');
     }
 
-    await interaction.editReply({
+    // 設定画面を消す
+    await interaction.deleteReply();
+
+    await interaction.followUp({
       content: 'ゲームを始めるよ！ヤッチョと勝負だ！',
       components: buildBoardButtons(this.board),
     });
@@ -96,16 +99,28 @@ export class TicTacToe {
       return;
     }
 
+    // 人
     placeCell(this.board, num, '⚪︎');
-    this.result = checkResult(this.board)
-    if(this.result){
+    this.result = checkResult(this.board);
+    if (this.result) {
       this.endTicTacToe(this.result, interaction);
+      await interaction.editReply({
+        components: buildBoardButtons(this.board),
+      });
+
+      return;
     }
-    
+
+    // CPU
     placeCell(this.board, selectCpuHand(this.board), '×');
-    this.result = checkResult(this.board)
-    if(this.result){
+    this.result = checkResult(this.board);
+    if (this.result) {
       this.endTicTacToe(this.result, interaction);
+      await interaction.editReply({
+        components: buildBoardButtons(this.board),
+      });
+
+      return;
     }
 
     await interaction.editReply({
@@ -113,12 +128,17 @@ export class TicTacToe {
     });
   }
 
-  private async endTicTacToe(result: Result, interaction: ButtonInteraction){
-    await interaction.followUp ({
-      content: resultContent.get(result!) ?? '何これ？',
+  private async endTicTacToe(result: Result, interaction: ButtonInteraction) {
+    const data = resultContent.get(result!);
+    const embed = new EmbedBuilder()
+        .setTitle(data?.title ?? '')
+        .setDescription(data?.description ?? '')
+        .setColor(data?.color ?? 0x000000)
+    await interaction.followUp({
+      embeds: [embed],
     });
     await this.stopTicTacToe();
-    }
+  }
 
   public async stopTicTacToe() {
     this.playUser = '';
