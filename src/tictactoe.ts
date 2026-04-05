@@ -14,10 +14,16 @@ import { selectCpuHand } from './cpu';
 // 送信者専用にする時にこれ
 const flags = MessageFlags.Ephemeral;
 type Status = 'wait' | 'play' | 'finish';
-const resultContent = new Map<NonNullable<Result>, { title: string, description: string, color: number }>([
-  ['win', {title: '勝利‼️', description: 'ヨヨヨ〜あなたの勝利だよ〜！', color: 0x0075ca}],
-  ['draw', {title: '引き分け❗️', description: '引き分け！もう一戦しよっか！', color: 0x2ea44f}],
-  ['lose', {title: '敗北❗️', description: 'イェーイ！感謝・感激・雨アラモード🍮！', color: 0xd73a4a}],
+const resultContent = new Map<
+  NonNullable<Result>,
+  { title: string; description: string; color: number }
+>([
+  ['win', { title: '勝利‼️', description: 'ヨヨヨ〜あなたの勝利だよ〜！', color: 0x0075ca }],
+  ['draw', { title: '引き分け❗️', description: '引き分け！もう一戦しよっか！', color: 0x2ea44f }],
+  [
+    'lose',
+    { title: '敗北❗️', description: 'イェーイ！感謝・感激・雨アラモード🍮！', color: 0xd73a4a },
+  ],
 ]);
 
 // 将来的にmap型にしてユーザ別にセッションを保持できるようにする
@@ -131,9 +137,9 @@ export class TicTacToe {
   private async endTicTacToe(result: Result, interaction: ButtonInteraction) {
     const data = resultContent.get(result!);
     const embed = new EmbedBuilder()
-        .setTitle(data?.title ?? '')
-        .setDescription(data?.description ?? '')
-        .setColor(data?.color ?? 0x000000)
+      .setTitle(data?.title ?? '')
+      .setDescription(data?.description ?? '')
+      .setColor(data?.color ?? 0x000000);
     await interaction.followUp({
       embeds: [embed],
     });
