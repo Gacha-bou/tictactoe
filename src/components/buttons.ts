@@ -86,25 +86,6 @@ export const buildBoardButtons = (board: Board, disabled = false) => {
   return rows;
 };
 
-// ここら辺の処理をslashCommandsと同じ感じにできるはずだけど一旦後回し
-export const selectMenuInteraction = async (interaction: StringSelectMenuInteraction) => {
-  await interaction.deferUpdate();
-  const selected = interaction.values[0]; // 選択した値を取得
-
-  switch (interaction.customId) {
-    case 'turn':
-      gameConfig.turn = selected;
-      break;
-    case 'difficulty':
-      gameConfig.difficulty = selected;
-      break;
-  }
-
-  await interaction.editReply({
-    components: optionSelect(gameConfig.turn, gameConfig.difficulty),
-  });
-};
-
 export const buttonInteraction = async (interaction: ButtonInteraction, tictactoe: TicTacToe) => {
   // 回線が遅いのもあるが毎回deferUpdateはおかしいはず
   await interaction.deferUpdate();
@@ -119,8 +100,6 @@ export const buttonInteraction = async (interaction: ButtonInteraction, tictacto
       if (interaction.customId.startsWith('cell_')) {
         await tictactoe.onCellPressed(interaction);
       }
-      break;
-
       break;
   }
 };
