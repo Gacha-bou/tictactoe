@@ -109,7 +109,7 @@ export class TicTacToe {
     placeCell(this.board, num, '⚪︎');
     this.result = checkResult(this.board);
     if (this.result) {
-      this.endTicTacToe(this.result, interaction);
+      await this.endTicTacToe(this.result, interaction);
       await interaction.editReply({
         components: buildBoardButtons(this.board, true),
       });
@@ -121,7 +121,7 @@ export class TicTacToe {
     placeCell(this.board, selectCpuHand(this.board), '×');
     this.result = checkResult(this.board);
     if (this.result) {
-      this.endTicTacToe(this.result, interaction);
+      await this.endTicTacToe(this.result, interaction);
       await interaction.editReply({
         components: buildBoardButtons(this.board, true),
       });

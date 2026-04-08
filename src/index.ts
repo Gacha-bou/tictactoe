@@ -2,7 +2,8 @@ import { Client, GatewayIntentBits, Events, REST, Routes } from 'discord.js';
 import { config } from 'dotenv';
 import { TicTacToe } from './tictactoe';
 import { commandsData, slashCommandsInteraction } from './components/slashCommands';
-import { buttonInteraction, selectMenuInteraction } from './components/buttons';
+import { buttonInteraction } from './components/buttons';
+import { selectMenuInteraction } from './components/selectMenu';
 
 config();
 
