@@ -1,2 +1,2 @@
 npm run format
-git diff --name-only --diff-filter=M -- '*.ts' '*.json' '*.js' '*.mjs' | xargs -r git add
+git diff --name-only --diff-filter=M --cached -- '*.ts' '*.json' '*.js' '*.mjs' | xargs -r git add
