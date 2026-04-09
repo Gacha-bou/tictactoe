@@ -11,6 +11,8 @@ import { Cell, Board, placeCell, Result, checkResult } from './boards';
 
 import { selectCpuHand } from './cpu';
 
+import { errorReply } from './lib/error';
+
 // 送信者専用にする時にこれ
 const flags = MessageFlags.Ephemeral;
 type Status = 'wait' | 'play' | 'finish';
@@ -48,10 +50,7 @@ export class TicTacToe {
     } else if (this.playUser == interaction.user.id) {
       // 同じユーザが叩いたら一旦リセット
     } else {
-      await interaction.reply({
-        content: '現在別のユーザが実行中なので、時間を置いてから参加してね〜',
-        flags,
-      });
+      await errorReply(interaction, '現在別のユーザが実行中なので、時間を置いてから参加してね〜');
       return;
     }
     await interaction.reply({
@@ -64,10 +63,7 @@ export class TicTacToe {
 
   public async startTicTacToe(interaction: ButtonInteraction) {
     if (!gameConfig.difficulty || !gameConfig.turn) {
-      await interaction.editReply({
-        content: '選択肢を全て選んでからゲームを始めてね〜',
-        components: optionSelect(),
-      });
+      await errorReply(interaction, '選択肢を全て選んでからゲームを始めてね〜');
       return;
     }
     this.board.fill(null);
@@ -88,20 +84,12 @@ export class TicTacToe {
 
   public async onCellPressed(interaction: ButtonInteraction) {
     const num = parseInt(interaction.customId.replace('cell_', ''));
-
     if (num < 0 || 9 < num) {
-      await interaction.followUp({
-        content: 'そこに石はないよ！',
-        flags,
-      });
-      return;
+      await errorReply(interaction, 'そこに石はないよ！');
     }
 
     if (this.board[num] != null) {
-      await interaction.followUp({
-        content: 'もう既に置いているぅ！',
-        flags,
-      });
+      await errorReply(interaction, 'もう既に置いているぅ！');
       return;
     }
 
