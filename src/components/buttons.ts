@@ -9,7 +9,35 @@ import {
   Application,
 } from 'discord.js';
 import { gameConfig, TicTacToe } from '../tictactoe';
-import { Board, placeCell } from '../boards';
+import { Board, Cell, placeCell } from '../boards';
+
+const button = {
+  gameStart: {
+    component: (turn: string | null, difficulty: string | null) =>
+      new ButtonBuilder()
+        .setCustomId('gamestart')
+        .setLabel('ゲーム開始！')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(!(turn && difficulty)),
+    execute: async (tictactoe: TicTacToe, interaction: ButtonInteraction) => {
+      await tictactoe.startTicTacToe(interaction);
+    },
+  },
+
+  cell: {
+    component: (num: number, cell: Cell, disabled = false) =>
+      new ButtonBuilder()
+        .setCustomId(`cell_${num}`)
+        .setLabel(cell!)
+        .setStyle(
+          cell ? ButtonStyle.Danger : cell == '⚪︎' ? ButtonStyle.Primary : ButtonStyle.Secondary,
+        )
+        .setDisabled(disabled),
+    execute: async (tictactoe: TicTacToe, interaction: ButtonInteraction) => {
+      await tictactoe.onCellPressed(interaction);
+    },
+  },
+};
 
 export const optionSelect = (turn: string | null = null, difficulty: string | null = null) => {
   const turnMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -48,15 +76,7 @@ export const optionSelect = (turn: string | null = null, difficulty: string | nu
       ),
   );
 
-  const okButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId('gamestart')
-      .setLabel('ゲーム開始！')
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(!(turn && difficulty)),
-  );
-
-  return [turnMenu, difficultyMenu, okButton];
+  return [turnMenu, difficultyMenu];
 };
 
 export const buildBoardButtons = (board: Board, disabled = false) => {
