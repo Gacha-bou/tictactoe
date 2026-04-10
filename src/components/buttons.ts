@@ -30,7 +30,11 @@ const button = {
         .setCustomId(`cell_${num}`)
         .setLabel(cell!)
         .setStyle(
-          cell ? ButtonStyle.Danger : cell == '⚪︎' ? ButtonStyle.Primary : ButtonStyle.Secondary,
+          cell === '×'
+            ? ButtonStyle.Danger
+            : cell === '⚪︎'
+              ? ButtonStyle.Primary
+              : ButtonStyle.Secondary,
         )
         .setDisabled(disabled),
     execute: async (tictactoe: TicTacToe, interaction: ButtonInteraction) => {
@@ -76,7 +80,11 @@ export const optionSelect = (turn: string | null = null, difficulty: string | nu
       ),
   );
 
-  return [turnMenu, difficultyMenu];
+  const okButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    button.gameStart.component(turn, difficulty),
+  );
+
+  return [turnMenu, difficultyMenu, okButton];
 };
 
 export const buildBoardButtons = (board: Board, disabled = false) => {
