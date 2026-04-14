@@ -1,9 +1,11 @@
 import {
+  ActionRowBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
   StringSelectMenuOptionBuilder,
+  MessageFlags,
 } from 'discord.js';
-import { gameConfig, TicTacToe } from '../tictactoe';
+import { gameConfig } from '../tictactoe';
 import { optionSelect } from './buttons';
 
 const difficulties = [
@@ -16,6 +18,7 @@ const turns = [
   { label: '先行', value: 'user' },
   { label: '後攻', value: 'bot' },
 ];
+const flags = MessageFlags.Ephemeral;
 
 const menu = {
   turn: {
@@ -32,7 +35,7 @@ const menu = {
           ),
         ),
 
-    execute: async (tictactoe: TicTacToe, interaction: StringSelectMenuInteraction) => {
+    execute: async (interaction: StringSelectMenuInteraction) => {
       gameConfig.turn = interaction.values[0];
       await interaction.editReply({
         components: optionSelect(gameConfig.turn, gameConfig.difficulty),
@@ -53,7 +56,7 @@ const menu = {
           ),
         ),
 
-    execute: async (tictactoe: TicTacToe, interaction: StringSelectMenuInteraction) => {
+    execute: async (interaction: StringSelectMenuInteraction) => {
       gameConfig.difficulty = interaction.values[0];
       await interaction.editReply({
         components: optionSelect(gameConfig.turn, gameConfig.difficulty),
@@ -64,22 +67,19 @@ const menu = {
 
 // コマンド名称
 type menuName = keyof typeof menu;
-export const selectMenu = Object.values(menu).map;
-
 export const selectMenuInteraction = async (interaction: StringSelectMenuInteraction) => {
-  await interaction.deferUpdate();
-  const selected = interaction.values[0]; // 選択した値を取得
-
-  switch (interaction.customId) {
-    case 'turn':
-      gameConfig.turn = selected;
-      break;
-    case 'difficulty':
-      gameConfig.difficulty = selected;
-      break;
+  if (!(interaction.customId in menu)) {
+    await interaction.reply({ content: '知らないメニューだよ〜', flags });
+    return;
   }
 
-  await interaction.editReply({
-    components: optionSelect(gameConfig.turn, gameConfig.difficulty),
-  });
+  await interaction.deferUpdate();
+  const menuName = interaction.customId as menuName;
+  await menu[menuName].execute(interaction);
+};
+
+export const makeSelectMenu = (menuName: menuName) => {
+  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+    menu[menuName].components(gameConfig[menuName]),
+  );
 };

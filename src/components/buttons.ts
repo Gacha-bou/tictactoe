@@ -11,6 +11,8 @@ import {
 import { gameConfig, TicTacToe } from '../tictactoe';
 import { Board, Cell, placeCell } from '../boards';
 
+import { makeSelectMenu } from './selectMenu';
+
 const button = {
   gameStart: {
     component: (turn: string | null, difficulty: string | null) =>
@@ -44,47 +46,11 @@ const button = {
 };
 
 export const optionSelect = (turn: string | null = null, difficulty: string | null = null) => {
-  const turnMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-    new StringSelectMenuBuilder()
-      .setCustomId('turn')
-      .setPlaceholder('先行・後攻は？')
-      .addOptions(
-        new StringSelectMenuOptionBuilder()
-          .setLabel('先行')
-          .setValue('user')
-          .setDefault(turn === 'user'),
-        new StringSelectMenuOptionBuilder()
-          .setLabel('後攻')
-          .setValue('bot')
-          .setDefault(turn === 'bot'),
-      ),
-  );
-
-  const difficultyMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-    new StringSelectMenuBuilder()
-      .setCustomId('difficulty')
-      .setPlaceholder('難易度は？')
-      .addOptions(
-        new StringSelectMenuOptionBuilder()
-          .setLabel('かんたん(ランダム)')
-          .setValue('easy')
-          .setDefault(difficulty === 'easy'),
-        new StringSelectMenuOptionBuilder()
-          .setLabel('ふつう(半分ランダム)')
-          .setValue('normal')
-          .setDefault(difficulty === 'normal'),
-        new StringSelectMenuOptionBuilder()
-          .setLabel('おに(多分勝てない)')
-          .setValue('impossible')
-          .setDefault(difficulty === 'impossible'),
-      ),
-  );
-
   const okButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
     button.gameStart.component(turn, difficulty),
   );
 
-  return [turnMenu, difficultyMenu, okButton];
+  return [makeSelectMenu('turn'), makeSelectMenu('difficulty'), okButton];
 };
 
 export const buildBoardButtons = (board: Board, disabled = false) => {
