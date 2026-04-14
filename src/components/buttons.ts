@@ -1,17 +1,16 @@
 import {
   ActionRowBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
   ButtonBuilder,
   ButtonStyle,
-  StringSelectMenuInteraction,
   ButtonInteraction,
-  Application,
+  MessageFlags,
 } from 'discord.js';
 import { gameConfig, TicTacToe } from '../tictactoe';
 import { Board, Cell, placeCell } from '../boards';
 
 import { makeSelectMenu } from './selectMenu';
+
+const flags = MessageFlags.Ephemeral;
 
 const button = {
   gameStart: {
@@ -80,20 +79,23 @@ export const buildBoardButtons = (board: Board, disabled = false) => {
   return rows;
 };
 
+type ButtonKey = keyof typeof button;
+type ComponentArgs<T extends ButtonKey> = Parameters<(typeof button)[T]['component']>;
+type ButtonArgs<T extends ButtonKey> = [T, ...ComponentArgs<T>];
+
+export const makeButton = <T extends ButtonKey>(...args: ButtonArgs<T>) => {
+  const [name, ...rest] = args;
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    (button[name].component as (...a: unknown[]) => ButtonBuilder)(...rest),
+  );
+};
+
 export const buttonInteraction = async (interaction: ButtonInteraction, tictactoe: TicTacToe) => {
+  if (!(interaction.id in button)) {
+    await interaction.reply({ content: '知らないボタンだよ〜', flags });
+  }
   // 回線が遅いのもあるが毎回deferUpdateはおかしいはず
   await interaction.deferUpdate();
-
-  switch (interaction.customId) {
-    case 'gamestart':
-      await tictactoe.startTicTacToe(interaction);
-      break;
-
-    // ボード内のボタンが押された際の処理
-    default:
-      if (interaction.customId.startsWith('cell_')) {
-        await tictactoe.onCellPressed(interaction);
-      }
-      break;
-  }
+  const key = interaction.id as ButtonKey;
+  await button[key].execute(tictactoe, interaction);
 };
