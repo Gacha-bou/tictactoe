@@ -40,7 +40,7 @@ const button = {
     component: (num: number, cell: Cell, disabled = false) =>
       new ButtonBuilder()
         .setCustomId(`cell_${num}`)
-        .setLabel(cell!)
+        .setLabel(cell ?? '-')
         .setStyle(
           cell === '×'
             ? ButtonStyle.Danger
@@ -63,32 +63,16 @@ export const optionSelect = (turn: string | null = null, difficulty: string | nu
   ];
 };
 
-export const buildBoardButtons = (board: Board, disabled = false) => {
-  const rows = [];
-  // モダンに書く場合はどうなるか気になる箇所
-  for (let line = 0; line < 3; line++) {
-    const row = new ActionRowBuilder<ButtonBuilder>();
-    for (let col = 0; col < 3; col++) {
-      const num = col + line * 3;
-      const cell = board[num];
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(`cell_${num}`)
-          .setLabel(cell == null ? '-' : cell)
-          .setStyle(
-            cell == '×'
-              ? ButtonStyle.Danger
-              : cell == '⚪︎'
-                ? ButtonStyle.Primary
-                : ButtonStyle.Secondary,
-          )
-          .setDisabled(disabled),
-      );
-    }
-    rows.push(row);
-  }
-  return rows;
-};
+export const buildBoardButtons = (board: Board, disabled = false) =>
+  // Array.fromでreturnしてくれるのありがたい
+  Array.from({ length: 3 }, (_, line) =>
+    makeButtonRow(
+      ...Array.from({ length: 3 }, (_, col): AnyButtonArgs => {
+        const num = col + line * 3;
+        return ['cell', num, board[num], disabled];
+      }),
+    ),
+  );
 
 type ButtonKey = keyof typeof button;
 type ComponentArgs<T extends ButtonKey> = Parameters<(typeof button)[T]['component']>;
