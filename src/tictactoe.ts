@@ -3,9 +3,10 @@ import {
   MessageFlags,
   ButtonInteraction,
   EmbedBuilder,
+  RepliableInteraction,
 } from 'discord.js';
 
-import { optionSelect, buildBoardButtons } from './components/buttons';
+import { optionSelect, buildBoardButtons, makeButton } from './components/buttons';
 
 import { Cell, Board, placeCell, Result, checkResult } from './boards';
 
@@ -55,7 +56,7 @@ export class TicTacToe {
     }
     await interaction.reply({
       content: '次の設定から選んでね〜',
-      components: optionSelect(),
+      components: [...optionSelect(), makeButton('gameEnd')],
       flags,
     });
     return;
@@ -134,13 +135,19 @@ export class TicTacToe {
 
     await interaction.followUp({
       content: 'もう一回やる〜？',
-      components: optionSelect(),
-      flags,
+      components: [...optionSelect(), makeButton('gameEnd')],
     });
-    await this.stopTicTacToe();
+    this.resetTicTacToe();
   }
 
-  public async stopTicTacToe() {
+  public async stopTicTacToe(interaction: RepliableInteraction) {
+    await interaction.followUp({
+      content: '一旦ここまで！さらば〜い！🐙',
+      flags,
+    });
+  }
+
+  private resetTicTacToe() {
     this.playUser = '';
     this.gameStatus = 'wait';
     return;

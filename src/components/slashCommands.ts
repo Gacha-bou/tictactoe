@@ -19,7 +19,7 @@ const commands = {
   stop: {
     data: new SlashCommandBuilder().setName('stop').setDescription('⚪︎×ゲームを終了します。'),
     execute: async (interaction: ChatInputCommandInteraction, tictactoe: TicTacToe) => {
-      await tictactoe.stopTicTacToe();
+      await tictactoe.stopTicTacToe(interaction);
     },
   },
 };

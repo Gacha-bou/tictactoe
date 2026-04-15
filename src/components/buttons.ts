@@ -16,12 +16,23 @@ const button = {
   gameStart: {
     component: (turn: string | null, difficulty: string | null) =>
       new ButtonBuilder()
-        .setCustomId('gamestart')
+        .setCustomId('gameStart')
         .setLabel('ゲーム開始！')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(!(turn && difficulty)),
     execute: async (tictactoe: TicTacToe, interaction: ButtonInteraction) => {
       await tictactoe.startTicTacToe(interaction);
+    },
+  },
+
+  gameEnd: {
+    component: () =>
+      new ButtonBuilder()
+        .setCustomId('gameEnd')
+        .setLabel('おしまい！')
+        .setStyle(ButtonStyle.Danger),
+    execute: async (tictactoe: TicTacToe, interaction: ButtonInteraction) => {
+      await tictactoe.stopTicTacToe(interaction);
     },
   },
 
@@ -45,11 +56,11 @@ const button = {
 };
 
 export const optionSelect = (turn: string | null = null, difficulty: string | null = null) => {
-  const okButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    button.gameStart.component(turn, difficulty),
-  );
-
-  return [makeSelectMenu('turn'), makeSelectMenu('difficulty'), okButton];
+  return [
+    makeSelectMenu('turn'),
+    makeSelectMenu('difficulty'),
+    makeButton('gameStart', turn, difficulty),
+  ];
 };
 
 export const buildBoardButtons = (board: Board, disabled = false) => {
@@ -83,6 +94,7 @@ type ButtonKey = keyof typeof button;
 type ComponentArgs<T extends ButtonKey> = Parameters<(typeof button)[T]['component']>;
 type ButtonArgs<T extends ButtonKey> = [T, ...ComponentArgs<T>];
 
+// 上記型を利用することで、makeButtonから型を揃えてボタンを作成できる
 export const makeButton = <T extends ButtonKey>(...args: ButtonArgs<T>) => {
   const [name, ...rest] = args;
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -90,12 +102,26 @@ export const makeButton = <T extends ButtonKey>(...args: ButtonArgs<T>) => {
   );
 };
 
+type AnyButtonArgs = { [K in ButtonKey]: ButtonArgs<K> }[ButtonKey];
+export const makeButtonRow = (...buttonArgsList: AnyButtonArgs[]) => {
+  const row = new ActionRowBuilder<ButtonBuilder>();
+  for (const args of buttonArgsList) {
+    const [name, ...rest] = args;
+    row.addComponents((button[name].component as (...a: unknown[]) => ButtonBuilder)(...rest));
+  }
+  return row;
+};
+
 export const buttonInteraction = async (interaction: ButtonInteraction, tictactoe: TicTacToe) => {
-  if (!(interaction.id in button)) {
+  // ボタン数値args持たせる
+  const [customId, ...args] = interaction.customId.split('_');
+
+  if (!(customId in button)) {
     await interaction.reply({ content: '知らないボタンだよ〜', flags });
+    return;
   }
   // 回線が遅いのもあるが毎回deferUpdateはおかしいはず
   await interaction.deferUpdate();
-  const key = interaction.id as ButtonKey;
+  const key = customId as ButtonKey;
   await button[key].execute(tictactoe, interaction);
 };
