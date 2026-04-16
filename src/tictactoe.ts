@@ -65,7 +65,7 @@ export class TicTacToe {
   }
 
   public async updateSelectMenu(interaction: RepliableInteraction) {
-    const isRestarting = this.gameStatus === 'wait';
+    const isRestarting = this.gameStatus === 'finish';
     await interaction.editReply({
       components: [
         ...selectMenu(),
@@ -158,6 +158,8 @@ export class TicTacToe {
   }
 
   public async stopTicTacToe(interaction: RepliableInteraction) {
+    this.playUser = '';
+    this.gameStatus = 'wait';
     await interaction.followUp({
       content: '一旦ここまで！さらば〜い！🐙',
       flags,
@@ -166,7 +168,7 @@ export class TicTacToe {
 
   private resetTicTacToe() {
     this.playUser = '';
-    this.gameStatus = 'wait';
+    this.gameStatus = 'finish';
     return;
   }
 }
