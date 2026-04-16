@@ -8,8 +8,6 @@ import {
 import { gameConfig, TicTacToe } from '../tictactoe';
 import { Board, Cell, placeCell } from '../boards';
 
-import { makeSelectMenu } from './selectMenu';
-
 const flags = MessageFlags.Ephemeral;
 
 const button = {
@@ -53,14 +51,6 @@ const button = {
       await tictactoe.onCellPressed(interaction);
     },
   },
-};
-
-export const optionSelect = (turn: string | null = null, difficulty: string | null = null) => {
-  return [
-    makeSelectMenu('turn'),
-    makeSelectMenu('difficulty'),
-    makeButton('gameStart', turn, difficulty),
-  ];
 };
 
 export const buildBoardButtons = (board: Board, disabled = false) =>

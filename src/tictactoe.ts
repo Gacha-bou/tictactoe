@@ -4,15 +4,17 @@ import {
   ButtonInteraction,
   EmbedBuilder,
   RepliableInteraction,
+  StringSelectMenuInteraction,
 } from 'discord.js';
 
-import { optionSelect, buildBoardButtons, makeButton } from './components/buttons';
+import { buildBoardButtons, makeButton, makeButtonRow } from './components/buttons';
 
 import { Cell, Board, placeCell, Result, checkResult } from './boards';
 
 import { selectCpuHand } from './cpu';
 
 import { errorReply } from './lib/error';
+import { selectMenu } from './components/selectMenu';
 
 // 送信者専用にする時にこれ
 const flags = MessageFlags.Ephemeral;
@@ -45,10 +47,10 @@ export class TicTacToe {
   private result: Result = null;
 
   public async initTicTacToe(interaction: ChatInputCommandInteraction) {
-    if (this.gameStatus == 'wait') {
+    if (this.gameStatus === 'wait') {
       this.playUser = interaction.user.id;
       this.gameStatus = 'play';
-    } else if (this.playUser == interaction.user.id) {
+    } else if (this.playUser === interaction.user.id) {
       // 同じユーザが叩いたら一旦リセット
     } else {
       await errorReply(interaction, '現在別のユーザが実行中なので、時間を置いてから参加してね〜');
@@ -56,10 +58,22 @@ export class TicTacToe {
     }
     await interaction.reply({
       content: '次の設定から選んでね〜',
-      components: [...optionSelect(), makeButton('gameEnd')],
+      components: [...selectMenu(), makeButtonRow(['gameStart', 'turn', 'difficulty'])],
       flags,
     });
     return;
+  }
+
+  public async updateSelectMenu(interaction: RepliableInteraction) {
+    const isRestarting = this.gameStatus === 'wait';
+    await interaction.editReply({
+      components: [
+        ...selectMenu(),
+        isRestarting
+          ? makeButtonRow(['gameStart', 'turn', 'difficulty'], ['gameEnd'])
+          : makeButtonRow(['gameStart', 'turn', 'difficulty']),
+      ],
+    });
   }
 
   public async startTicTacToe(interaction: ButtonInteraction) {
@@ -135,7 +149,10 @@ export class TicTacToe {
 
     await interaction.followUp({
       content: 'もう一回やる〜？',
-      components: [...optionSelect(), makeButton('gameEnd')],
+      components: [
+        ...selectMenu(),
+        makeButtonRow(['gameStart', 'turn', 'difficulty'], ['gameEnd']),
+      ],
     });
     this.resetTicTacToe();
   }

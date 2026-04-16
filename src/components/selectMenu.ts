@@ -5,8 +5,7 @@ import {
   StringSelectMenuOptionBuilder,
   MessageFlags,
 } from 'discord.js';
-import { gameConfig } from '../tictactoe';
-import { optionSelect } from './buttons';
+import { gameConfig, TicTacToe } from '../tictactoe';
 
 const difficulties = [
   { label: 'かんたん(ランダム)', value: 'easy' },
@@ -35,11 +34,9 @@ const menu = {
           ),
         ),
 
-    execute: async (interaction: StringSelectMenuInteraction) => {
+    execute: async (tictactoe: TicTacToe, interaction: StringSelectMenuInteraction) => {
       gameConfig.turn = interaction.values[0];
-      await interaction.editReply({
-        components: optionSelect(gameConfig.turn, gameConfig.difficulty),
-      });
+      await tictactoe.updateSelectMenu(interaction);
     },
   },
   difficulty: {
@@ -56,18 +53,21 @@ const menu = {
           ),
         ),
 
-    execute: async (interaction: StringSelectMenuInteraction) => {
+    execute: async (tictactoe: TicTacToe, interaction: StringSelectMenuInteraction) => {
       gameConfig.difficulty = interaction.values[0];
-      await interaction.editReply({
-        components: optionSelect(gameConfig.turn, gameConfig.difficulty),
-      });
+      await tictactoe.updateSelectMenu(interaction);
     },
   },
 };
 
+export const selectMenu = () => [makeSelectMenu('turn'), makeSelectMenu('difficulty')];
+
 // コマンド名称
 type menuName = keyof typeof menu;
-export const selectMenuInteraction = async (interaction: StringSelectMenuInteraction) => {
+export const selectMenuInteraction = async (
+  interaction: StringSelectMenuInteraction,
+  tictactoe: TicTacToe,
+) => {
   if (!(interaction.customId in menu)) {
     await interaction.reply({ content: '知らないメニューだよ〜', flags });
     return;
@@ -75,7 +75,7 @@ export const selectMenuInteraction = async (interaction: StringSelectMenuInterac
 
   await interaction.deferUpdate();
   const menuName = interaction.customId as menuName;
-  await menu[menuName].execute(interaction);
+  await menu[menuName].execute(tictactoe, interaction);
 };
 
 export const makeSelectMenu = (menuName: menuName) => {

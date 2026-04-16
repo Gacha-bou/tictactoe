@@ -31,10 +31,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     await slashCommandsInteraction(interaction, tictactoe);
   } else if (interaction.isButton()) {
     await buttonInteraction(interaction, tictactoe);
-
-    // コンボボックス選択時処理。別ファイルに分けるか？
   } else if (interaction.isStringSelectMenu()) {
-    await selectMenuInteraction(interaction);
+    await selectMenuInteraction(interaction, tictactoe);
   }
 });
 
