@@ -31,20 +31,13 @@ const resultContent = new Map<
   ],
 ]);
 
-// 将来的にmap型にしてユーザ別にセッションを保持できるようにする
-export const gameConfig: {
-  turn: string | null;
-  difficulty: string | null;
-} = {
-  turn: null,
-  difficulty: null,
-};
-
 export class TicTacToe {
   private playUser: String = '';
   private gameStatus: Status = 'wait';
   private board: Board = Array(9).fill(null);
   private result: Result = null;
+  private turn: string = '';
+  private difficulty: string = '';
 
   public async initTicTacToe(interaction: ChatInputCommandInteraction) {
     if (this.gameStatus === 'wait') {
@@ -64,26 +57,36 @@ export class TicTacToe {
     return;
   }
 
+  public async setTurn(interaction: StringSelectMenuInteraction, turn: string) {
+    this.turn = turn;
+    await this.updateSelectMenu(interaction);
+  }
+
+  public async setDifficulty(interaction: StringSelectMenuInteraction, difficulty: string) {
+    this.difficulty = difficulty;
+    await this.updateSelectMenu(interaction);
+  }
+
   public async updateSelectMenu(interaction: RepliableInteraction) {
     const isRestarting = this.gameStatus === 'finish';
     await interaction.editReply({
       components: [
-        ...selectMenu(),
+        ...selectMenu(this.turn, this.difficulty),
         isRestarting
-          ? makeButtonRow(['gameStart', 'turn', 'difficulty'], ['gameEnd'])
-          : makeButtonRow(['gameStart', 'turn', 'difficulty']),
+          ? makeButtonRow(['gameStart', this.turn, this.difficulty], ['gameEnd'])
+          : makeButtonRow(['gameStart', this.turn, this.difficulty]),
       ],
     });
   }
 
   public async startTicTacToe(interaction: ButtonInteraction) {
-    if (!gameConfig.difficulty || !gameConfig.turn) {
+    if (!this.difficulty || !this.turn) {
       await errorReply(interaction, '選択肢を全て選んでからゲームを始めてね〜');
       return;
     }
     this.board.fill(null);
 
-    if (gameConfig.turn == 'bot') {
+    if (this.turn == 'bot') {
       placeCell(this.board, selectCpuHand(this.board), '×');
     }
 

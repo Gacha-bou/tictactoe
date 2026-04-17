@@ -5,8 +5,8 @@ import {
   ButtonInteraction,
   MessageFlags,
 } from 'discord.js';
-import { gameConfig, TicTacToe } from '../tictactoe';
-import { Board, Cell, placeCell } from '../boards';
+import { TicTacToe } from '../tictactoe';
+import { Board, Cell } from '../boards';
 
 const flags = MessageFlags.Ephemeral;
 

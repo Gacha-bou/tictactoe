@@ -5,7 +5,7 @@ import {
   StringSelectMenuOptionBuilder,
   MessageFlags,
 } from 'discord.js';
-import { gameConfig, TicTacToe } from '../tictactoe';
+import { TicTacToe } from '../tictactoe';
 
 const difficulties = [
   { label: 'かんたん(ランダム)', value: 'easy' },
@@ -35,8 +35,7 @@ const menu = {
         ),
 
     execute: async (tictactoe: TicTacToe, interaction: StringSelectMenuInteraction) => {
-      gameConfig.turn = interaction.values[0];
-      await tictactoe.updateSelectMenu(interaction);
+      await tictactoe.setTurn(interaction, interaction.values[0]);
     },
   },
   difficulty: {
@@ -54,13 +53,15 @@ const menu = {
         ),
 
     execute: async (tictactoe: TicTacToe, interaction: StringSelectMenuInteraction) => {
-      gameConfig.difficulty = interaction.values[0];
-      await tictactoe.updateSelectMenu(interaction);
+      await tictactoe.setDifficulty(interaction, interaction.values[0]);
     },
   },
 };
 
-export const selectMenu = () => [makeSelectMenu('turn'), makeSelectMenu('difficulty')];
+export const selectMenu = (turn: string | null = null, difficulty: string | null = null) => [
+  makeSelectMenu('turn', turn),
+  makeSelectMenu('difficulty', difficulty),
+];
 
 // コマンド名称
 type menuName = keyof typeof menu;
@@ -78,8 +79,8 @@ export const selectMenuInteraction = async (
   await menu[menuName].execute(tictactoe, interaction);
 };
 
-export const makeSelectMenu = (menuName: menuName) => {
+export const makeSelectMenu = (menuName: menuName, currentValue: string | null = null) => {
   return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-    menu[menuName].components(gameConfig[menuName]),
+    menu[menuName].components(currentValue),
   );
 };
