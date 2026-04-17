@@ -16,7 +16,6 @@ import { selectCpuHand } from './cpu';
 import { errorReply } from './lib/error';
 import { selectMenu } from './components/selectMenu';
 
-// 送信者専用にする時にこれ
 const flags = MessageFlags.Ephemeral;
 type Status = 'wait' | 'play' | 'finish';
 const resultContent = new Map<
@@ -30,6 +29,9 @@ const resultContent = new Map<
     { title: '敗北❗️', description: 'イェーイ！感謝・感激・雨アラモード🍮！', color: 0xd73a4a },
   ],
 ]);
+
+export type Turn = 'user' | 'bot';
+export type Difficulty = 'easy' | 'normal' | 'impossible';
 
 export class TicTacToe {
   private playUser: String = '';
@@ -57,12 +59,12 @@ export class TicTacToe {
     return;
   }
 
-  public async setTurn(interaction: StringSelectMenuInteraction, turn: string) {
+  public async setTurn(interaction: StringSelectMenuInteraction, turn: Turn) {
     this.turn = turn;
     await this.updateSelectMenu(interaction);
   }
 
-  public async setDifficulty(interaction: StringSelectMenuInteraction, difficulty: string) {
+  public async setDifficulty(interaction: StringSelectMenuInteraction, difficulty: Difficulty) {
     this.difficulty = difficulty;
     await this.updateSelectMenu(interaction);
   }
